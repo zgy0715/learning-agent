@@ -1,0 +1,101 @@
+{
+  "course_id": "data_structure",
+  "title": "数据结构",
+  "chapters": [
+    {
+      "chapter_id": "ch01",
+      "title": "线性表",
+      "content": [
+        {
+          "chunk_index": 0,
+          "content": "线性表（Linear List）是最基本的数据结构之一，它由n个数据元素组成的有限序列。线性表的特点是：存在唯一的第一个元素和最后一个元素；除了第一个元素外，每个元素有且仅有一个前驱；除了最后一个元素外，每个元素有且仅有一个后继。",
+          "metadata": {"page": "1-2", "section": "1.1 线性表定义"}
+        },
+        {
+          "chunk_index": 1,
+          "content": "顺序表（Sequential List）是用一段地址连续的存储单元依次存储线性表的数据元素。优点：随机访问效率高，存储密度大。缺点：插入和删除需要移动大量元素，表的容量固定，容易造成空间浪费。",
+          "metadata": {"page": "2-3", "section": "1.2 顺序表"}
+        },
+        {
+          "chunk_index": 2,
+          "content": "链表（Linked List）是用一组任意的存储单元存储线性表的数据元素。优点：插入和删除操作灵活，不需要移动元素。缺点：不能随机访问，存储密度较低。常见类型：单链表、双向链表、循环链表。",
+          "metadata": {"page": "3-5", "section": "1.3 链表"}
+        }
+      ]
+    },
+    {
+      "chapter_id": "ch02",
+      "title": "栈和队列",
+      "content": [
+        {
+          "chunk_index": 0,
+          "content": "栈（Stack）是限定仅在表尾进行插入和删除操作的线性表。后进先出（LIFO）是栈的基本特性。基本操作：Push（入栈）、Pop（出栈）、Top（取栈顶元素）、IsEmpty（判空）。应用：函数调用、表达式求值、括号匹配。",
+          "metadata": {"page": "6-7", "section": "2.1 栈"}
+        },
+        {
+          "chunk_index": 1,
+          "content": "队列（Queue）是限定仅在表尾插入、表头删除的线性表。先进先出（FIFO）是队列的基本特性。基本操作：Enqueue（入队）、Dequeue（出队）、Front（取队头元素）。循环队列解决了假溢出问题。",
+          "metadata": {"page": "7-9", "section": "2.2 队列"}
+        }
+      ]
+    },
+    {
+      "chapter_id": "ch03",
+      "title": "树与二叉树",
+      "content": [
+        {
+          "chunk_index": 0,
+          "content": "树（Tree）是n个结点的有限集。二叉树是每个结点最多有两个子树的树结构。满二叉树：每层结点数都是最大值。完全二叉树：除最后一层外，其余层都是满的，且最后一层结点从左到右连续。",
+          "metadata": {"page": "10-11", "section": "3.1 树的基本概念"}
+        },
+        {
+          "chunk_index": 1,
+          "content": "二叉树的遍历方式：前序遍历（根-左-右）、中序遍历（左-根-右）、后序遍历（左-右-根）、层序遍历（按层从左到右）。已知前序+中序或后序+中序可以唯一确定一棵二叉树。",
+          "metadata": {"page": "11-13", "section": "3.2 二叉树遍历"}
+        },
+        {
+          "chunk_index": 2,
+          "content": "哈夫曼树（Huffman Tree）：带权路径长度最小的二叉树。构造方法：每次选取权值最小的两棵树合并。应用：哈夫曼编码，用于数据压缩。",
+          "metadata": {"page": "13-14", "section": "3.3 哈夫曼树"}
+        }
+      ]
+    },
+    {
+      "chapter_id": "ch04",
+      "title": "图",
+      "content": [
+        {
+          "chunk_index": 0,
+          "content": "图（Graph）由顶点和边组成。有向图：边有方向。无向图：边无方向。完全图：任意两个顶点之间都有边。连通图：任意两个顶点之间都有路径。图的存储：邻接矩阵、邻接表。",
+          "metadata": {"page": "15-16", "section": "4.1 图的基本概念"}
+        },
+        {
+          "chunk_index": 1,
+          "content": "图的遍历：深度优先搜索（DFS）- 沿着一条路径尽可能深地搜索。广度优先搜索（BFS）- 逐层搜索。最短路径算法：Dijkstra算法（单源最短路径）、Floyd算法（多源最短路径）。",
+          "metadata": {"page": "16-18", "section": "4.2 图的遍历与最短路径"}
+        },
+        {
+          "chunk_index": 2,
+          "content": "最小生成树：连接所有顶点且边权值之和最小的树。Prim算法：从某个顶点开始，每次加入权值最小的边。Kruskal算法：按权值排序，依次加入不形成环的边。",
+          "metadata": {"page": "18-19", "section": "4.3 最小生成树"}
+        }
+      ]
+    },
+    {
+      "chapter_id": "ch05",
+      "title": "查找与排序",
+      "content": [
+        {
+          "chunk_index": 0,
+          "content": "顺序查找：从表头开始逐个比较。平均查找长度ASL = (n+1)/2。折半查找：要求表有序，每次比较缩小一半范围。ASL ≈ log₂(n+1) - 1。哈希查找：通过哈希函数直接定位。",
+          "metadata": {"page": "20-21", "section": "5.1 查找"}
+        },
+        {
+          "chunk_index": 1,
+          "content": "排序算法比较：冒泡排序O(n²)、选择排序O(n²)、插入排序O(n²)、希尔排序O(n^1.3)、归并排序O(nlog₂n)、快速排序O(nlog₂n)、堆排序O(nlog₂n)。不稳定排序：选择、希尔、堆、快速。",
+          "metadata": {"page": "21-23", "section": "5.2 排序"}
+        }
+      ]
+    }
+  ]
+}
