@@ -1,0 +1,32 @@
+# Web框架
+fastapi==0.115.*
+uvicorn[standard]==0.34.*
+python-multipart==0.0.*
+
+# 数据库
+motor==3.7.*
+pymongo==4.11.*
+
+# LLM & Agent
+openai>=1.61.0
+langgraph==0.3.*
+langchain-core==0.3.*
+langchain-openai==0.3.*
+
+# 结构化输出
+instructor==1.7.*
+pydantic==2.10.*
+pydantic-settings==2.7.*
+
+# 向量检索
+sentence-transformers==3.*
+numpy==2.*
+
+# 内容处理
+python-pptx==1.0.*
+markdown==3.8.*
+pymdown-extensions==10.*
+
+# 工具
+python-dotenv==1.1.*
+httpx==0.28.*

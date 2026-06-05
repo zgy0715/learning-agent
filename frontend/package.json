@@ -1,0 +1,27 @@
+{
+  "name": "a3-learning-agent-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "vue": "^3.5.0",
+    "vue-router": "^4.4.0",
+    "pinia": "^2.2.0",
+    "axios": "^1.7.0",
+    "echarts": "^5.5.0",
+    "vue-echarts": "^7.0.0",
+    "markmap-view": "^0.17.0",
+    "markmap-lib": "^0.17.0",
+    "markdown-it": "^14.0.0",
+    "highlight.js": "^11.10.0"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0",
+    "@vitejs/plugin-vue": "^5.2.0"
+  }
+}
