@@ -220,27 +220,26 @@ async def submit_feedback(request: FeedbackRequest):
         }
         await get_collection("feedback_history").insert_one(feedback_doc)
 
-        # 根据反馈类型处理
-        if request.feedback_type == FeedbackType.TOO_HARD:
-            # 太难：插入前置知识步骤
+        # 根据反馈类型，统一交由真 LangGraph 重规划器自适应调整路径并持久化
+        adaptive_types = {
+            FeedbackType.TOO_HARD: ("too_hard", "已根据「太难」反馈补充前置知识、降低难度并重排路径"),
+            FeedbackType.TOO_EASY: ("too_easy", "已根据「太简单」反馈精简步骤并提升后续难度"),
+            FeedbackType.NEED_HELP: ("need_help", "已根据「需要帮助」反馈增加示例与练习巩固"),
+        }
+
+        if request.feedback_type in adaptive_types:
+            fb_value, msg = adaptive_types[request.feedback_type]
             result = await path_agent.handle_feedback(
                 path_id=request.path_id,
                 step_id=request.step_id,
-                feedback_type="too_hard"
+                feedback_type=fb_value
             )
+            if result.get("error"):
+                raise HTTPException(status_code=400, detail=result["error"])
             return {
-                "message": "已调整路径，插入了前置知识步骤",
+                "message": result.get("notes") or msg,
                 "adjusted_path": result
             }
-
-        elif request.feedback_type == FeedbackType.TOO_EASY:
-            # 太简单：跳过当前步骤
-            await complete_step(request.step_id, request.path_id)
-            return {"message": "已跳过当前步骤"}
-
-        elif request.feedback_type == FeedbackType.NEED_HELP:
-            # 需要帮助：触发答疑
-            return {"message": "正在为您生成详细解答..."}
 
         else:
             return {"message": "反馈已记录"}

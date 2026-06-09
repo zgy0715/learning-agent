@@ -68,13 +68,16 @@ async def run_generation_workflow(task_id: str, request: GenerateRequest):
             }}
         )
 
-        # 调用ResourceAgent生成资源
+        # 调用ResourceAgent生成资源（真 LangGraph：Supervisor→CRAG→写作→多Worker→Critic自精炼→安全→聚合）
         result = await resource_agent.generate(
             user_id=request.user_id,
             topic=request.topic,
             resource_types=request.resource_types,
             task_id=task_id
         )
+
+        quality_report = result.get("quality_report", {})
+        knowledge_sufficient = result.get("knowledge_sufficient", True)
 
         # 保存生成的资源
         resource_ids = []
@@ -88,6 +91,7 @@ async def run_generation_workflow(task_id: str, request: GenerateRequest):
                     "format": resource.get("format", "markdown"),
                     "quality_score": resource.get("quality_score", 0),
                     "rag_sources": result.get("rag_sources", []),
+                    "knowledge_sufficient": knowledge_sufficient,
                     "safety_checked": True,
                     "generated_by": resource.get("agent", "ResourceAgent")
                 },
@@ -105,7 +109,9 @@ async def run_generation_workflow(task_id: str, request: GenerateRequest):
                 "progress": 1.0,
                 "result": {
                     "resource_ids": resource_ids,
-                    "resources": result.get("resources", [])
+                    "resources": result.get("resources", []),
+                    "quality_report": quality_report,
+                    "knowledge_sufficient": knowledge_sufficient
                 },
                 "updated_at": datetime.now()
             }}
@@ -134,6 +140,7 @@ async def get_task_status(task_id: str):
             "task_id": task["task_id"],
             "status": task["status"],
             "current_step": task.get("current_step", ""),
+            "current_node": task.get("current_node", ""),
             "progress": task.get("progress", 0),
             "result": task.get("result"),
             "error": task.get("error")
@@ -158,6 +165,7 @@ async def stream_task_progress(task_id: str):
             current_status = {
                 "status": task["status"],
                 "current_step": task.get("current_step", ""),
+                "current_node": task.get("current_node", ""),
                 "progress": task.get("progress", 0)
             }
 

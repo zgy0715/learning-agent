@@ -9,16 +9,14 @@ pymongo==4.11.*
 
 # LLM & Agent
 openai>=1.61.0
-langgraph==0.3.*
-langchain-core==0.3.*
-langchain-openai==0.3.*
+langgraph==0.3.*          # 多智能体状态图编排（ProfileGraph/ResourceGraph/PathGraph）
+langchain-core==0.3.*     # langgraph 依赖
 
-# 结构化输出
-instructor==1.7.*
+# 结构化输出（JSON mode + Pydantic 校验，见 services/llm.py:structured）
 pydantic==2.10.*
 pydantic-settings==2.7.*
 
-# 向量检索
+# 向量检索（真实 embedding：ollama 优先，sentence-transformers 本地回退）
 sentence-transformers==3.*
 numpy==2.*
 

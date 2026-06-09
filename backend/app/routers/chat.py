@@ -13,6 +13,7 @@ from app.models.chat import ChatRequest, ChatSession
 from app.models.user import UserProfile
 from app.database import get_collection
 from app.agents.profile_agent import ProfileAgent
+from app.services.llm import chat_stream, chat
 
 router = APIRouter(prefix="/api", tags=["chat"])
 
@@ -58,40 +59,53 @@ async def send_message(request: ChatRequest):
         ).sort("timestamp", 1).limit(20)
         messages = await messages_cursor.to_list(20)
 
-        # 调用ProfileAgent分析
+        # 调用ProfileAgent分析（真 LangGraph：意图→LLM抽取画像→置信度合并→决策）
         result = await profile_agent.analyze(
             messages=messages,
             current_profile=current_profile,
             user_id=user_id
         )
 
-        # 保存AI回复
-        assistant_message = {
-            "session_id": request.session_id,
-            "role": "assistant",
-            "content": result["response"],
-            "timestamp": datetime.now(),
-            "metadata": {
-                "tokens_used": result.get("tokens_used", 0),
-                "profile_updated": result.get("profile_updated", False),
-            }
-        }
-        await get_collection("chat_messages").insert_one(assistant_message)
-
-        # 返回SSE流式响应
+        # 返回 SSE 真流式响应：逐 token 推送回复，结束后再发画像更新与完成事件
         async def event_generator():
-            # 生成token事件
-            content = result["response"]
-            for i in range(0, len(content), 10):
-                chunk = content[i:i+10]
-                yield f"data: {json.dumps({'content': chunk})}\n\n"
+            full_reply = ""
+            reply_messages = result.get("reply_messages")
 
-            # 画像更新事件
+            try:
+                if reply_messages:
+                    # 真 token 流式：直接消费 LLM 增量输出
+                    async for token in chat_stream(reply_messages, temperature=0.7, max_tokens=1500):
+                        full_reply += token
+                        yield f"data: {json.dumps({'content': token})}\n\n"
+                else:
+                    # 无 reply_messages（如首条欢迎语）则回退为整段文本
+                    full_reply = result.get("response", "")
+                    if full_reply:
+                        yield f"data: {json.dumps({'content': full_reply})}\n\n"
+            except Exception as e:
+                err = f"（生成回复时出错：{e}）"
+                full_reply = full_reply or err
+                yield f"data: {json.dumps({'content': err})}\n\n"
+
+            # 落库完整回复
+            assistant_message = {
+                "session_id": request.session_id,
+                "role": "assistant",
+                "content": full_reply,
+                "timestamp": datetime.now(),
+                "metadata": {
+                    "intent": result.get("intent", ""),
+                    "profile_updated": result.get("profile_updated", False),
+                },
+            }
+            insert_res = await get_collection("chat_messages").insert_one(assistant_message)
+
+            # 画像更新事件（前端据此刷新雷达图）
             if result.get("profile_updated"):
                 yield f"data: {json.dumps({'profile_update': result.get('profile_dimensions', {})})}\n\n"
 
             # 完成事件
-            yield f"data: {json.dumps({'message_id': str(assistant_message.get('_id', '')), 'tokens_used': result.get('tokens_used', 0)})}\n\n"
+            yield f"data: {json.dumps({'message_id': str(insert_res.inserted_id), 'tokens_used': result.get('tokens_used', 0)})}\n\n"
 
         return StreamingResponse(
             event_generator(),

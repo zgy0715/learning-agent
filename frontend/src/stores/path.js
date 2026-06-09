@@ -7,7 +7,8 @@ import {
   planLearningPath as planLearningPathApi,
   getCurrentPath as getCurrentPathApi,
   submitFeedback as submitFeedbackApi,
-  completeStep as completeStepApi
+  completeStep as completeStepApi,
+  getPathHistory as getPathHistoryApi
 } from '../services/api'
 
 export const usePathStore = defineStore('path', () => {
@@ -46,7 +47,7 @@ export const usePathStore = defineStore('path', () => {
     try {
       const userId = getDefaultUserId()
       const result = await getCurrentPathApi(userId, topic)
-      if (result.path_id) {
+      if (result && result.path_id) {
         currentPath.value = result
       } else {
         currentPath.value = null
@@ -54,9 +55,22 @@ export const usePathStore = defineStore('path', () => {
       return currentPath.value
     } catch (error) {
       console.error('Failed to get current path:', error)
-      throw error
+      currentPath.value = null
+      return null
     } finally {
       loading.value = false
+    }
+  }
+
+  // 获取路径历史
+  const getHistory = async (limit = 10) => {
+    try {
+      const userId = getDefaultUserId()
+      const result = await getPathHistoryApi(userId, limit)
+      return result || []
+    } catch (error) {
+      console.error('Failed to get path history:', error)
+      return []
     }
   }
 
@@ -91,6 +105,7 @@ export const usePathStore = defineStore('path', () => {
     loading,
     planPath,
     getCurrentPath,
+    getHistory,
     submitFeedback,
     completeStep
   }

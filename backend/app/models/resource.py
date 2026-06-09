@@ -1,7 +1,7 @@
 """
 学习资源相关数据模型
 """
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional, Dict
 from datetime import datetime
 from enum import Enum
@@ -54,7 +54,7 @@ class GenerateRequest(BaseModel):
     """资源生成请求"""
     user_id: str = Field(description="用户ID")
     topic: str = Field(description="学习主题")
-    resource_types: List[ResourceType] = Field(
+    resource_types: Optional[List[ResourceType]] = Field(
         default_factory=lambda: [
             ResourceType.DOCUMENT,
             ResourceType.MINDMAP,
@@ -63,5 +63,19 @@ class GenerateRequest(BaseModel):
             ResourceType.VIDEO,
             ResourceType.AUDIO,
         ],
-        description="要生成的资源类型"
+        description="要生成的资源类型，不传或传 null 则使用默认类型列表"
     )
+
+    @field_validator('resource_types', mode='before')
+    @classmethod
+    def default_resource_types(cls, v):
+        if v is None:
+            return [
+                ResourceType.DOCUMENT,
+                ResourceType.MINDMAP,
+                ResourceType.EXERCISE,
+                ResourceType.CODE,
+                ResourceType.VIDEO,
+                ResourceType.AUDIO,
+            ]
+        return v

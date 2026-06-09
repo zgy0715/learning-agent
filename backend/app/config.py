@@ -19,8 +19,20 @@ class Settings(BaseSettings):
     MONGODB_DB_NAME: str = "a3_learning_agent"
 
     # Embedding 配置
-    EMBEDDING_MODEL: str = "BAAI/bge-m3"
-    EMBEDDING_DIMENSION: int = 1024
+    # provider: ollama | sentence_transformers | openai_compatible
+    # DeepSeek 无 embedding 接口，故向量检索默认走本地 ollama，失败自动回退 sentence_transformers
+    EMBEDDING_PROVIDER: str = "ollama"
+    EMBEDDING_BASE_URL: str = "http://localhost:11434/v1"   # ollama / openai_compatible
+    EMBEDDING_API_KEY: str = "ollama"                        # ollama 占位即可
+    EMBEDDING_MODEL: str = "bge-m3"                          # ollama / openai_compatible 模型名
+    EMBEDDING_ST_MODEL: str = "BAAI/bge-small-zh-v1.5"       # sentence_transformers 回退模型
+    EMBEDDING_DIMENSION: int = 1024                          # 仅供参考，实际维度按真实向量动态确定
+
+    # Agent 调参
+    RESOURCE_QUALITY_THRESHOLD: float = 80.0   # Self-Refine 质量阈值
+    RESOURCE_MAX_REVISIONS: int = 2            # 资源最大修订轮数
+    CRAG_RELEVANCE_THRESHOLD: float = 0.5      # CRAG 单块相关性保留阈值
+    CRAG_MIN_RELEVANT: int = 1                 # 低于此数量触发 query 改写重试
 
     # 安全配置
     GUARDRAILS_ENABLED: bool = True

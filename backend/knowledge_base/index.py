@@ -57,10 +57,21 @@ async def main():
     await connect_db()
     print("已连接MongoDB")
 
-    # 索引所有课程
+    # 清空旧索引（旧版本可能是随机向量，必须清掉避免真假向量混用）
+    deleted = await get_collection("knowledge_docs").delete_many({})
+    print(f"已清空旧索引: {deleted.deleted_count} 条")
+
+    # 索引所有课程（真实 embedding 向量）
     courses_dir = Path(__file__).parent / "courses"
     for course_file in courses_dir.glob("*.json"):
         await index_course(str(course_file))
+
+    # 为关键词检索创建文本索引（混合检索用，失败可忽略）
+    try:
+        await get_collection("knowledge_docs").create_index([("content", "text")])
+        print("已创建 content 文本索引")
+    except Exception as e:
+        print(f"文本索引创建跳过: {e}")
 
     # 关闭数据库
     await close_db()

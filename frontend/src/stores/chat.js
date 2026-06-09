@@ -54,8 +54,8 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
-  // 发送消息
-  const sendMessage = async (content) => {
+  // 发送消息（支持 onToken 逐字回调，实现真流式渲染）
+  const sendMessage = async (content, onToken = null) => {
     if (!currentSession.value) {
       await createSession()
     }
@@ -63,7 +63,7 @@ export const useChatStore = defineStore('chat', () => {
     loading.value = true
     try {
       const sessionId = currentSession.value.session_id
-      const response = await sendMessageApi(sessionId, content)
+      const response = await sendMessageApi(sessionId, content, onToken)
       return response
     } catch (error) {
       console.error('Failed to send message:', error)

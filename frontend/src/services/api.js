@@ -4,7 +4,7 @@
  */
 import axios from 'axios'
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001'
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -39,9 +39,10 @@ api.interceptors.response.use(
 // ==================== 对话相关API ====================
 
 /**
- * 发送消息（处理SSE流式响应）
+ * 发送消息（处理SSE真流式响应）
+ * @param onToken 可选回调，每收到一个增量 token 即触发，用于前端逐字渲染
  */
-export const sendMessage = async (sessionId, message) => {
+export const sendMessage = async (sessionId, message, onToken = null) => {
   const response = await fetch(`${BASE_URL}/api/chat`, {
     method: 'POST',
     headers: {
@@ -57,20 +58,25 @@ export const sendMessage = async (sessionId, message) => {
   const decoder = new TextDecoder()
   let content = ''
   let profileUpdate = null
+  let buffer = ''
 
   while (true) {
     const { done, value } = await reader.read()
     if (done) break
 
-    const chunk = decoder.decode(value)
-    const lines = chunk.split('\n')
+    // 按 SSE 事件边界(\n\n)切分，避免 chunk 跨界截断 JSON
+    buffer += decoder.decode(value, { stream: true })
+    const events = buffer.split('\n\n')
+    buffer = events.pop() || ''
 
-    for (const line of lines) {
-      if (line.startsWith('data: ')) {
+    for (const evt of events) {
+      for (const line of evt.split('\n')) {
+        if (!line.startsWith('data: ')) continue
         try {
           const data = JSON.parse(line.slice(6))
           if (data.content) {
             content += data.content
+            if (onToken) onToken(data.content, content)
           }
           if (data.profile_update) {
             profileUpdate = data.profile_update
@@ -141,11 +147,11 @@ export const getSessions = async (userId) => {
  * 启动资源生成
  */
 export const generateResources = async (userId, topic, resourceTypes) => {
-  const response = await api.post('/api/generate', {
-    user_id: userId,
-    topic,
-    resource_types: resourceTypes
-  })
+  const body = { user_id: userId, topic }
+  if (resourceTypes && resourceTypes.length > 0) {
+    body.resource_types = resourceTypes
+  }
+  const response = await api.post('/api/generate', body)
   return response
 }
 
